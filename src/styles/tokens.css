@@ -1,0 +1,35 @@
+/*
+ * Tokens de design. Valores provisórios: serão substituídos pelo guia de estilo
+ * do Figma (docs/design/guia-de-estilo.md) na etapa 2.
+ */
+:root {
+  --color-primary: #2b5797;
+  --color-bg: #ffffff;
+  --color-surface: #f5f7fb;
+  --color-text: #1d2433;
+  --color-text-muted: #5b6475;
+  --color-border: #d7dce5;
+  --color-success: #1f7a4d;
+  --color-warning: #a35f00;
+  --color-danger: #b42318;
+
+  --color-priority-alta: #b42318;
+  --color-priority-media: #a35f00;
+  --color-priority-baixa: #1f7a4d;
+
+  --font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --radius: 8px;
+  --touch-target: 44px;
+
+  --breakpoint-desktop: 768px;
+}
