@@ -1,7 +1,8 @@
 /**
  * Tipos centrais do domínio. Não dependem de React nem de Firebase.
  * Horários do dia são representados em minutos desde 00:00 (ex.: 19:30 = 1170).
- * Datas sem hora usam o formato ISO "YYYY-MM-DD"; instantes usam ISO 8601 completo.
+ * Datas usam "YYYY-MM-DD" e instantes usam "YYYY-MM-DDTHH:mm", sempre no
+ * horário local do usuário (America/Sao_Paulo, P10).
  */
 
 export type Id = string;
@@ -9,18 +10,20 @@ export type Id = string;
 /** Data sem hora, no formato "YYYY-MM-DD". */
 export type IsoDate = string;
 
-/** Instante no formato ISO 8601 (ex.: "2026-11-20T14:30:00-03:00"). */
+/** Data e hora local no formato "YYYY-MM-DDTHH:mm". */
 export type IsoDateTime = string;
 
 /** Minutos desde 00:00 (0–1440). */
 export type MinuteOfDay = number;
 
-/** Dia da semana ISO: 1 = segunda … 7 = domingo (P10). */
-export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+/** Dia da semana: 0 = domingo … 6 = sábado (a semana começa no domingo, P10). */
+export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type Priority = 'alta' | 'media' | 'baixa';
 
-/** RF02 — compromisso fixo da rotina (aula, trabalho, sono). */
+export const PRIORITIES: readonly Priority[] = ['alta', 'media', 'baixa'];
+
+/** RF02 — compromisso fixo da rotina (aula, trabalho). */
 export interface FixedCommitment {
   id: Id;
   title: string;
@@ -39,19 +42,20 @@ export interface Task {
   createdAt: IsoDateTime;
 }
 
-/** RF04 — bloco de trabalho alocado para uma tarefa. */
+/** RF04 — bloco de trabalho alocado para uma tarefa em um dia. */
 export interface PlanBlock {
   id: Id;
   taskId: Id;
-  start: IsoDateTime;
-  end: IsoDateTime;
+  date: IsoDate;
+  start: MinuteOfDay;
+  end: MinuteOfDay;
   /** RF07 / RN05 — bloco fixado não é alterado pelo recálculo. */
   pinned: boolean;
-  /** RF08 — bloco concluído. */
+  /** RF08 — bloco concluído (também não é alterado pelo recálculo). */
   done: boolean;
 }
 
-/** RF11, RF12 — preferências do usuário usadas pelo planejamento. */
+/** RF11, RF12 — preferências usadas pelo planejamento. */
 export interface UserSettings {
   dailyLimitMinutes: number;
   windowStart: MinuteOfDay;
@@ -70,7 +74,7 @@ export interface PlanAlert {
   missingMinutes: number;
 }
 
-/** Entrada do algoritmo de planejamento. Mesma entrada → mesma saída (RNF06). */
+/** Entrada do algoritmo. Mesma entrada → mesma saída (RNF06). */
 export interface PlanInput {
   now: IsoDateTime;
   commitments: FixedCommitment[];

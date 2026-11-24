@@ -1,11 +1,20 @@
 import type { ReactNode } from 'react';
+import styles from './layout.module.css';
 
-export interface PageHeaderProps {
+interface PageHeaderProps {
   title: string;
+  description?: string;
   actions?: ReactNode;
 }
 
-/** Etapa 2: implementar a partir do Figma. */
-export function PageHeader(_props: PageHeaderProps) {
-  return <div data-component="PageHeader">PageHeader</div>;
+export function PageHeader({ title, description, actions }: PageHeaderProps) {
+  return (
+    <div className={styles.pageHeader}>
+      <div>
+        <h1 className={styles.pageTitle}>{title}</h1>
+        {description && <p className={styles.pageDescription}>{description}</p>}
+      </div>
+      {actions && <div className={styles.pageActions}>{actions}</div>}
+    </div>
+  );
 }

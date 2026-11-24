@@ -1,14 +1,26 @@
-export interface TextFieldProps {
+import { useId, type InputHTMLAttributes } from 'react';
+import { describedBy } from './describedBy';
+import { Field } from './Field';
+import styles from './ui.module.css';
+
+interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  name: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'time';
+  hint?: string;
   error?: string;
-  required?: boolean;
 }
 
-/** Etapa 2: implementar a partir do Figma. */
-export function TextField(_props: TextFieldProps) {
-  return <div data-component="TextField">TextField</div>;
+export function TextField({ label, hint, error, id, className, ...rest }: TextFieldProps) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  return (
+    <Field id={inputId} label={label} hint={hint} error={error}>
+      <input
+        id={inputId}
+        className={className ?? styles.input}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(inputId, hint, error)}
+        {...rest}
+      />
+    </Field>
+  );
 }

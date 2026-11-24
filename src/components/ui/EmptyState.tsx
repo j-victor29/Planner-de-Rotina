@@ -1,12 +1,23 @@
 import type { ReactNode } from 'react';
+import { Icon, type IconName } from './Icon';
+import styles from './ui.module.css';
 
-export interface EmptyStateProps {
+interface EmptyStateProps {
+  icon?: IconName;
   title: string;
   description?: string;
   action?: ReactNode;
 }
 
-/** Etapa 2: implementar a partir do Figma. */
-export function EmptyState(_props: EmptyStateProps) {
-  return <div data-component="EmptyState">EmptyState</div>;
+export function EmptyState({ icon = 'sparkle', title, description, action }: EmptyStateProps) {
+  return (
+    <div className={styles.empty}>
+      <span className={styles.emptyIcon}>
+        <Icon name={icon} size={24} />
+      </span>
+      <p className={styles.emptyTitle}>{title}</p>
+      {description && <p className={styles.emptyText}>{description}</p>}
+      {action}
+    </div>
+  );
 }

@@ -1,7 +1,17 @@
+import { useMemo } from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
+import { AppProviders } from './providers/AppProviders';
+import { createAppRouter } from './router';
+import { createServices, type DataSource } from '@/services';
+
+const dataSource: DataSource = import.meta.env.VITE_DATA_SOURCE === 'firebase' ? 'firebase' : 'mock';
 
 export function App() {
-  // Etapa 2: envolver com <ServicesProvider services={createServices(...)}>.
-  return <RouterProvider router={router} />;
+  const services = useMemo(() => createServices(dataSource), []);
+  const router = useMemo(() => createAppRouter(), []);
+  return (
+    <AppProviders services={services}>
+      <RouterProvider router={router} />
+    </AppProviders>
+  );
 }

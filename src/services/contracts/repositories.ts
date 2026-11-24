@@ -2,7 +2,6 @@ import type {
   FixedCommitment,
   FixedCommitmentInput,
   Id,
-  IsoDateTime,
   PlanBlock,
   Task,
   TaskInput,
@@ -29,10 +28,9 @@ export interface TaskRepository {
 }
 
 export interface BlockRepository {
-  listBetween(start: IsoDateTime, end: IsoDateTime): Promise<PlanBlock[]>;
-  listAll(): Promise<PlanBlock[]>;
-  /** Substitui os blocos não fixados/não concluídos pelos novos (resultado do recálculo). */
-  replacePlan(blocks: PlanBlock[]): Promise<void>;
+  list(): Promise<PlanBlock[]>;
+  /** Substitui todos os blocos do usuário (resultado de um recálculo). */
+  replaceAll(blocks: PlanBlock[]): Promise<void>;
   update(block: PlanBlock): Promise<PlanBlock>;
 }
 

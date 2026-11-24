@@ -1,8 +1,10 @@
-export interface SpinnerProps {
-  label?: string;
-}
+import styles from './ui.module.css';
 
-/** Etapa 2: implementar a partir do Figma. */
-export function Spinner(_props: SpinnerProps) {
-  return <div data-component="Spinner">Spinner</div>;
+export function Spinner({ label = 'Carregando' }: { label?: string }) {
+  return (
+    <div className={styles.spinnerWrap} role="status">
+      <span className={styles.spinner} aria-hidden="true" />
+      <span className="visually-hidden">{label}</span>
+    </div>
+  );
 }

@@ -1,4 +1,4 @@
 # hooks
 
-Hooks reutilizáveis entre módulos (ex.: `useMediaQuery`, `useAsync`).
-Hooks específicos de um módulo ficam dentro de `src/features/<módulo>/hooks/`.
+Hooks reutilizáveis entre módulos: `useMediaQuery` (desktop × celular) e `useNow` (relógio).
+Hooks específicos de um módulo ficam dentro de `src/features/<módulo>/`.

@@ -1,0 +1,145 @@
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.cardPadded {
+  composes: card;
+  padding: var(--space-5);
+}
+.cardTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+.cardText {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 720px) {
+  .listGrid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+.item {
+  composes: card;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+.itemMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.itemTitle {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.itemMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.itemActions {
+  display: flex;
+  align-items: flex-start;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+}
+@media (max-width: 599px) {
+  .formActions {
+    flex-direction: column-reverse;
+  }
+  .formActions > * {
+    width: 100%;
+  }
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+.chipOn {
+  composes: chip;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+.progressDone {
+  height: 100%;
+  background: var(--color-success);
+}
+
+.warningText {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-danger);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}

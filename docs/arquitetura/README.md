@@ -54,6 +54,10 @@ tests/            unit, integration, e2e, non-functional, features
 docs/             arquitetura, requisitos, relatorio, design, testes, ia
 ```
 
+## Modo demonstração
+
+Sem login, a interface usa `createDemoServices()` (dados de exemplo só em memória) e fica somente leitura: qualquer ação abre o modal de cadastro. Depois do login, `PlannerProvider` troca para os serviços do usuário. Isso fica em `src/app/providers/PlannerProvider.tsx`.
+
 ## Fluxo de recálculo (RF09)
 
 1. O usuário altera algo (tarefa, rotina, bloco, configuração).

@@ -6,14 +6,18 @@ import type {
   TaskRepository,
 } from './contracts';
 
-/**
- * Conjunto de serviços usado pela interface. A UI depende só destes contratos,
- * então trocar mock → Firebase (etapa 3) não muda nenhum componente.
- */
-export interface AppServices {
-  auth: AuthService;
+/** Repositórios de dados do usuário (sem autenticação). */
+export interface DataServices {
   commitments: CommitmentRepository;
   tasks: TaskRepository;
   blocks: BlockRepository;
   settings: SettingsRepository;
+}
+
+/**
+ * Conjunto de serviços usado pela interface. A UI depende só destes contratos,
+ * então trocar mock → Firebase (etapa 3) não muda nenhum componente.
+ */
+export interface AppServices extends DataServices {
+  auth: AuthService;
 }

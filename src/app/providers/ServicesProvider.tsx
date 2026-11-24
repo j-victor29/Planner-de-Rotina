@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import type { AppServices } from '@/services';
 import { ServicesContext } from './ServicesContext';
+import type { AppServices } from '@/services';
 
 interface ServicesProviderProps {
   services: AppServices;
