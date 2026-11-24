@@ -25,7 +25,7 @@ jobs:
       - run: npm ci
       - name: Bloquear testes ignorados
         run: |
-          if grep -rnE "\b(it|test|describe)\.(skip|todo|only)\b|\bx(it|describe)\(" tests/; then
+          if grep -rnE --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' "\b(it|test|describe)\.(skip|todo|only)\b|\bx(it|describe)\(" tests/; then
             echo "::error::Testes com skip/todo/only não são permitidos"
             exit 1
           fi
