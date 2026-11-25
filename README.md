@@ -52,11 +52,11 @@ Arquitetura: [docs/arquitetura/README.md](docs/arquitetura/README.md) · Como co
 
 | Papel | Integrante |
 |---|---|
-| Dev fullstack e arquiteto | Vitallzin |
-| Product Owner e requisitos | Dudu |
-| DevOps, CI/CD e repositório | Calvo |
-| Interface e usabilidade | Cesinha |
-| Testes | Bruno |
+| Dev fullstack e arquiteto | Cauã Vital |
+| Product Owner e requisitos | Eduardo Vinícius |
+| DevOps, CI/CD e repositório | João Victor |
+| Interface e usabilidade | Gabriel Cesar |
+| Testes | José Bruno |
 
 ## Versões
 
