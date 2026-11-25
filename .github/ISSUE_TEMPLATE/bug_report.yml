@@ -1,0 +1,65 @@
+name: Relato de Bug
+description: Crie um relatório de erro para ajudar a identificar e corrigir problemas
+title: 'fix: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar o problema! Certifique-se de seguir o padrão descrito no [CONTRIBUTING.md](../../CONTRIBUTING.md).
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição do Bug
+      description: Uma descrição clara e concisa do que é o problema.
+      placeholder: Descreva o problema encontrado...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para Reproduzir
+      description: Etapas detalhadas para reproduzir o comportamento.
+      placeholder: |
+        1. Acesse '...'
+        2. Clique em '....'
+        3. Preencha '....'
+        4. Veja o erro
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento Esperado
+      description: Uma explicação clara do que deveria acontecer.
+      placeholder: O sistema deveria...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento Obtido
+      description: O que de fato aconteceu ao executar os passos.
+      placeholder: O sistema apresentou a mensagem de erro...
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Prints / Evidências
+      description: Adicione capturas de tela ou logs para ajudar a esclarecer o problema.
+      placeholder: Arraste imagens ou cole trechos de logs aqui...
+    validations:
+      required: false
+  - type: dropdown
+    id: module
+    attributes:
+      label: Módulo Relacionado
+      options:
+        - '1. Contas e perfil'
+        - '2. Rotina e tarefas'
+        - '3. Planejamento'
+        - 'DevOps / CI / Infraestrutura'
+        - 'Outro'
+    validations:
+      required: true

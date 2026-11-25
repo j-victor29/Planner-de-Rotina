@@ -1,0 +1,33 @@
+name: Sugestão de Funcionalidade
+description: Sugira uma ideia ou nova capacidade para o Planner de Rotina
+title: 'feat: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propostas de novas funcionalidades devem estar alinhadas com a arquitetura e os requisitos do projeto.
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Descrição da Funcionalidade
+      description: Qual necessidade essa funcionalidade atende?
+      placeholder: Gostaria que o sistema...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução Proposta
+      description: Uma descrição clara de como você imagina o funcionamento.
+      placeholder: Sugiro implementar da seguinte forma...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: Outras soluções ou alternativas que foram pensadas.
+      placeholder: Considerei também...
+    validations:
+      required: false
