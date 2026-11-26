@@ -8,6 +8,29 @@ Sistema que organiza a rotina e decide **quando** fazer cada tarefa. O usuário 
 
 O planejamento usa um **algoritmo determinístico** (prazo mais próximo e prioridade), sem IA: os mesmos dados geram sempre o mesmo plano.
 
+**Aplicação publicada (Vercel):** https://planner-de-rotina.vercel.app/
+
+## O que já foi implementado
+
+### Front-end e Domínio (Etapa 2)
+- **Algoritmo determinístico (`src/domain/planner/generatePlan.ts`):** distribuição dos blocos até o prazo respeitando janela de sono, limite diário e de fim de semana, dias de descanso, pausa entre blocos, período preferido, blocos fixados/concluídos e alertas de capacidade.
+- **Rotas e interface (`src/features/`, `src/app/`):**
+  - `/` — Visão semanal em linha do tempo (domingo a sábado no desktop e por dia no celular), com navegação entre semanas, legenda de prioridades, painel lateral de tarefas e ações nos blocos (mover, fixar e concluir).
+  - `/tarefas` — Cadastro, listagem, prioridades, prazos e progresso no plano.
+  - `/rotina` — Gerenciamento de compromissos fixos recorrentes.
+  - `/perfil` — Preferências de sono, limite diário/fim de semana, período preferido, dias de descanso, pausa entre blocos e exclusão de conta.
+  - `/bem-vindo` — Onboarding guiado em tela cheia (sono, compromissos, preferências e primeira tarefa).
+- **Tema e modo demonstração:** tema claro/escuro, layout responsivo a partir de 360 px e modo demonstração pré-populado com serviços em memória (`npm run dev:mock`).
+
+### Back-end e Infraestrutura (Etapa 3)
+- **Firebase Authentication (`src/infra/firebase/`):** cadastro, login com e-mail/senha, login com Google, recuperação de senha e exclusão de conta com reautenticação.
+- **Cloud Firestore (`firestore.rules`):** persistência de rotina, tarefas, preferências, plano e perfil isolados por usuário.
+- **Deploy na Vercel (`vercel.json`):** hospedagem SPA publicada e funcional em [planner-de-rotina.vercel.app](https://planner-de-rotina.vercel.app/).
+
+### Qualidade e CI/CD
+- **Testes (`tests/`):** suíte unitária (`unit/`), de integração com Firebase Emulator (`integration/`) e não funcional de desempenho (`non-functional/`).
+- **GitHub Actions (`.github/workflows/ci.yml`):** pipeline de CI e templates de Issues (`.github/ISSUE_TEMPLATE/`).
+
 ## Módulos
 
 1. **Contas e perfil** — cadastro, login, limite diário, janela de horário.
