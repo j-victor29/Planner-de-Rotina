@@ -1,4 +1,4 @@
-# Requisitos — responsável: **Eduardo Vinicius**
+# Requisitos — responsável: **Eduardo Vinícius**
 
 Arquivos (um por assunto):
 
