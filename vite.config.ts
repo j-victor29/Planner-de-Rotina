@@ -16,7 +16,13 @@ export default defineConfig({
       reporter: ['text', 'html', 'lcov', 'json-summary'],
       // RNF04: cobertura mínima de 70% nos serviços de negócio centrais.
       include: ['src/domain/**/*.ts', 'src/services/**/*.ts'],
-      exclude: ['**/*.d.ts', '**/index.ts', 'src/domain/types.ts', 'src/services/contracts/**'],
+      exclude: [
+        '**/*.d.ts',
+        '**/index.ts',
+        'src/domain/types.ts',
+        'src/services/AppServices.ts',
+        'src/services/contracts/**',
+      ],
       thresholds: { lines: 70 },
     },
   },

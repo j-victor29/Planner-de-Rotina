@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Bloquear testes ignorados
+        run: |
+          if grep -rnE --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' "\b(it|test|describe)\.(skip|todo|only)\b|\bx(it|describe)\(" tests/; then
+            echo "::error::Testes com skip/todo/only não são permitidos"
+            exit 1
+          fi
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cobertura
+          path: coverage/
+          if-no-files-found: ignore
