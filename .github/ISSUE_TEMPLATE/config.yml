@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Guia de Contribuição
+    url: https://github.com/j-victor29/Planner-de-Rotina/blob/main/CONTRIBUTING.md
+    about: Consulte as regras de contribuição, divisão de pastas e padronização de commits.

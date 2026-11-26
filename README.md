@@ -1,6 +1,8 @@
 # Planner de Rotina
 
-<!-- Badges de CI e cobertura: adicionados pelo João Victor junto com o ci.yml -->
+[![CI](https://github.com/j-victor29/Planner-de-Rotina/actions/workflows/ci.yml/badge.svg)](https://github.com/j-victor29/Planner-de-Rotina/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/j-victor29/Planner-de-Rotina/actions/workflows/ci.yml)
+[![Node](https://img.shields.io/badge/node-%3E%3D20.19-blue.svg)](.nvmrc)
 
 Sistema que organiza a rotina e decide **quando** fazer cada tarefa. O usuário cadastra a rotina fixa (aula, trabalho, sono) e as tarefas com duração, prazo e prioridade; o sistema distribui blocos de trabalho nos horários livres das semanas até o prazo, respeitando o limite diário. Se não houver tempo suficiente, ele avisa em vez de montar um plano impossível.
 
@@ -57,7 +59,7 @@ Arquitetura: [docs/arquitetura/README.md](docs/arquitetura/README.md) · Como co
 | Papel | Integrante |
 |---|---|
 | Dev fullstack e arquiteto | Cauã Vital |
-| Product Owner e requisitos | Eduardo Vinicius |
+| Product Owner e requisitos | Eduardo Vinícius |
 | DevOps, CI/CD e repositório | João Victor |
 | Interface e usabilidade | Gabriel Cesar |
 | Testes | José Bruno |
