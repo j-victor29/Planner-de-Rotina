@@ -2,6 +2,7 @@ import type {
   AuthService,
   BlockRepository,
   CommitmentRepository,
+  ProfileRepository,
   SettingsRepository,
   TaskRepository,
 } from './contracts';
@@ -20,4 +21,5 @@ export interface DataServices {
  */
 export interface AppServices extends DataServices {
   auth: AuthService;
+  profile: ProfileRepository;
 }

@@ -270,6 +270,34 @@
   border-right: none;
 }
 
+.restColumn {
+  background-color: color-mix(in srgb, var(--color-baixa-soft) 55%, transparent);
+}
+.restLabel {
+  position: sticky;
+  top: 72px;
+  display: block;
+  margin: var(--space-4) auto 0;
+  width: max-content;
+  max-width: 90%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-baixa-soft);
+  color: var(--color-baixa);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-align: center;
+}
+.restChip {
+  align-self: flex-start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-baixa-soft);
+  color: var(--color-baixa);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
 .past {
   position: absolute;
   inset: 0 0 auto 0;

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import styles from './auth.module.css';
 import { useSession } from '@/app/providers/SessionContext';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -7,7 +8,7 @@ import { validateSignIn } from '@/domain';
 import page from '@/features/shared/page.module.css';
 import { errorMessage } from '@/utils/errors';
 
-export function LoginForm() {
+export function LoginForm({ onForgot }: { onForgot: () => void }) {
   const { signIn } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,6 +51,9 @@ export function LoginForm() {
         onChange={(e) => setPassword(e.target.value)}
         error={errors.password}
       />
+      <button type="button" className={styles.forgot} onClick={onForgot}>
+        Esqueci minha senha
+      </button>
       <Button type="submit" block loading={busy}>
         Entrar
       </Button>

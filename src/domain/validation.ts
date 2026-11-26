@@ -1,6 +1,8 @@
 import { RULES } from './rules';
+import { awakeIntervals, sleepMinutes } from './schedule';
 import { formatDuration, isOnSlot, isValidDate } from './time';
 import {
+  PREFERRED_PERIODS,
   PRIORITIES,
   type FixedCommitmentInput,
   type IsoDate,
@@ -79,31 +81,49 @@ export function validateCommitment(
   return errors;
 }
 
+const limitInRange = (value: number) =>
+  isOnSlot(value) && value >= RULES.DAILY_LIMIT_MIN_MINUTES && value <= RULES.DAILY_LIMIT_MAX_MINUTES;
+
 /** RF11, RF12, RN09 — valida as configurações do usuário. */
 export function validateSettings(input: UserSettings): ValidationErrors<UserSettings> {
   const errors: ValidationErrors<UserSettings> = {};
 
-  const limit = input.dailyLimitMinutes;
-  if (
-    !isOnSlot(limit) ||
-    limit < RULES.DAILY_LIMIT_MIN_MINUTES ||
-    limit > RULES.DAILY_LIMIT_MAX_MINUTES
-  ) {
+  if (!limitInRange(input.dailyLimitMinutes)) {
     errors.dailyLimitMinutes = 'O limite diário deve ficar entre 1 e 16 horas.';
   }
-
-  if (!isValidMinute(input.windowStart)) {
-    errors.windowStart = 'Escolha um horário de início válido.';
+  if (input.weekendLimitMinutes !== null && !limitInRange(input.weekendLimitMinutes)) {
+    errors.weekendLimitMinutes = 'O limite do fim de semana deve ficar entre 1 e 16 horas.';
   }
-  if (!isValidMinute(input.windowEnd)) {
-    errors.windowEnd = 'Escolha um horário de fim válido.';
-  } else if (isValidMinute(input.windowStart)) {
-    if (input.windowEnd <= input.windowStart) {
-      errors.windowEnd = 'O fim deve ser depois do início.';
-    } else if (input.windowEnd - input.windowStart < RULES.WINDOW_MIN_MINUTES) {
-      errors.windowEnd = 'A janela precisa ter pelo menos 1 hora.';
+
+  if (!isValidMinute(input.sleepStart)) errors.sleepStart = 'Informe um horário válido.';
+  if (!isValidMinute(input.sleepEnd)) {
+    errors.sleepEnd = 'Informe um horário válido.';
+  } else if (isValidMinute(input.sleepStart)) {
+    if (sleepMinutes(input) === 0) {
+      errors.sleepEnd = 'Os horários de dormir e acordar não podem ser iguais.';
+    } else if (
+      awakeIntervals(input).reduce((sum, i) => sum + i.end - i.start, 0) < RULES.AWAKE_MIN_MINUTES
+    ) {
+      errors.sleepEnd = 'Você precisa ficar acordado pelo menos 1 hora por dia.';
     }
   }
 
+  if (new Set(input.restDays).size >= 7) {
+    errors.restDays = 'Deixe pelo menos um dia da semana para planejar.';
+  }
+  if (!PREFERRED_PERIODS.includes(input.preferredPeriod)) {
+    errors.preferredPeriod = 'Escolha um período.';
+  }
+  if (!(RULES.BREAK_OPTIONS as readonly number[]).includes(input.breakMinutes)) {
+    errors.breakMinutes = 'Escolha uma pausa válida.';
+  }
+
   return errors;
+}
+
+/** Aviso (não bloqueia) quando o sono planejado é menor que 8 h. */
+export function sleepWarning(settings: Pick<UserSettings, 'sleepStart' | 'sleepEnd'>): string | null {
+  const minutes = sleepMinutes(settings);
+  if (minutes === 0 || minutes >= RULES.SLEEP_RECOMMENDED_MINUTES) return null;
+  return `Você está planejando ${formatDuration(minutes)} de sono. Dormir menos de 8h pode prejudicar sua saúde e seu rendimento.`;
 }

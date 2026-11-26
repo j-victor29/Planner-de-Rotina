@@ -1,5 +1,5 @@
 import {
-  DEFAULT_SETTINGS,
+  defaultSettings,
   fromJsDate,
   type FixedCommitment,
   type Id,
@@ -10,12 +10,21 @@ import {
 } from '@/domain';
 import type { AppServices } from '@/services/AppServices';
 import type { AuthService, SignUpData } from '@/services/contracts';
-import { browserStore, type MockDatabase, type MockStore, type MockUserData } from './store';
+import {
+  browserStore,
+  type MockAccount,
+  type MockDatabase,
+  type MockStore,
+  type MockUserData,
+} from './store';
 
 export interface MockOptions {
   store?: MockStore;
   clock?: () => Date;
 }
+
+/** Conta usada pelo botão "Continuar com Google" no modo mock. */
+export const MOCK_GOOGLE_ACCOUNT = { name: 'Usuário Google', email: 'usuario.google@exemplo.com' };
 
 let idCounter = 0;
 function newId(): Id {
@@ -37,16 +46,22 @@ async function hashPassword(password: string): Promise<string> {
   return (hash >>> 0).toString(16);
 }
 
-function emptyUserData(): MockUserData {
-  return { commitments: [], tasks: [], blocks: [], settings: { ...DEFAULT_SETTINGS } };
+export function emptyUserData(): MockUserData {
+  return { onboardingCompleted: false, commitments: [], tasks: [], blocks: [], settings: defaultSettings() };
 }
 
 const clone = <T>(value: T): T => structuredClone(value);
 
+const toProfile = (account: MockAccount): UserProfile => ({
+  id: account.id,
+  name: account.name,
+  email: account.email,
+  provider: account.provider ?? 'password',
+});
+
 /**
- * Implementação em memória de todos os serviços (etapa 2 e testes).
- * Segue exatamente os contratos de `services/contracts`, então a troca pelo
- * Firebase na etapa 3 não muda a interface.
+ * Implementação em memória de todos os serviços (front-end sem Firebase e testes).
+ * Segue exatamente os contratos de `services/contracts`.
  */
 export function createMockServices(options: MockOptions = {}): AppServices {
   const store = options.store ?? browserStore('planner-de-rotina:mock-db');
@@ -60,15 +75,17 @@ export function createMockServices(options: MockOptions = {}): AppServices {
     store.write(db);
   };
 
-  const profileOf = (db: MockDatabase, userId: string | null): UserProfile | null => {
-    if (!userId) return null;
-    const account = Object.values(db.accounts).find((a) => a.id === userId);
-    return account ? { id: account.id, name: account.name, email: account.email } : null;
+  const accountById = (db: MockDatabase, userId: string | null) =>
+    userId ? Object.values(db.accounts).find((a) => a.id === userId) : undefined;
+
+  const currentUser = (): UserProfile | null => {
+    const db = read();
+    const account = accountById(db, db.sessionUserId);
+    return account ? toProfile(account) : null;
   };
 
   const notify = () => {
-    const db = read();
-    const user = profileOf(db, db.sessionUserId);
+    const user = currentUser();
     listeners.forEach((listener) => listener(user));
   };
 
@@ -80,55 +97,71 @@ export function createMockServices(options: MockOptions = {}): AppServices {
 
   /** Lê ou altera os dados do usuário logado (isolamento entre contas). */
   const userData = (): MockUserData => {
-    const db = read();
-    return clone(db.data[requireUserId()] ?? emptyUserData());
+    const data = read().data[requireUserId()];
+    return clone({ ...emptyUserData(), ...data, settings: { ...defaultSettings(), ...data?.settings } });
   };
   const updateUserData = (mutate: (data: MockUserData) => void) => {
     const userId = requireUserId();
     commit((db) => {
-      const data = db.data[userId] ?? emptyUserData();
+      const data = { ...emptyUserData(), ...db.data[userId] };
       mutate(data);
       db.data[userId] = data;
     });
   };
 
+  const startSession = (account: MockAccount) => {
+    commit((db) => {
+      db.sessionUserId = account.id;
+    });
+    notify();
+    return toProfile(account);
+  };
+
   const auth: AuthService = {
-    getCurrentUser: () => {
-      const db = read();
-      return profileOf(db, db.sessionUserId);
-    },
+    getCurrentUser: currentUser,
     onAuthChange(listener) {
       listeners.add(listener);
-      listener(auth.getCurrentUser());
+      listener(currentUser());
       return () => listeners.delete(listener);
     },
     async signUp({ name, email, password }: SignUpData) {
       const key = email.trim().toLowerCase();
       if (read().accounts[key]) throw new Error('Já existe uma conta com este e-mail.');
-      const account = {
+      const account: MockAccount = {
         id: newId(),
         name: name.trim(),
         email: key,
         passwordHash: await hashPassword(password),
+        provider: 'password',
       };
       commit((db) => {
         db.accounts[key] = account;
         db.data[account.id] = emptyUserData();
-        db.sessionUserId = account.id;
       });
-      notify();
-      return { id: account.id, name: account.name, email: account.email };
+      return startSession(account);
     },
     async signIn(email, password) {
       const account = read().accounts[email.trim().toLowerCase()];
-      if (!account || account.passwordHash !== (await hashPassword(password))) {
+      if (!account || account.provider === 'google' || account.passwordHash !== (await hashPassword(password))) {
         throw new Error('E-mail ou senha inválidos.');
       }
-      commit((db) => {
-        db.sessionUserId = account.id;
-      });
-      notify();
-      return { id: account.id, name: account.name, email: account.email };
+      return startSession(account);
+    },
+    async signInWithGoogle() {
+      const key = MOCK_GOOGLE_ACCOUNT.email;
+      let account = read().accounts[key];
+      if (!account) {
+        const created: MockAccount = { id: newId(), ...MOCK_GOOGLE_ACCOUNT, passwordHash: '', provider: 'google' };
+        commit((db) => {
+          db.accounts[key] = created;
+          db.data[created.id] = emptyUserData();
+        });
+        account = created;
+      }
+      return startSession(account);
+    },
+    async sendPasswordReset() {
+      // No mock não há e-mail. O Firebase envia o link de redefinição.
     },
     async signOut() {
       commit((db) => {
@@ -136,14 +169,20 @@ export function createMockServices(options: MockOptions = {}): AppServices {
       });
       notify();
     },
-    async deleteAccount() {
-      const userId = requireUserId();
-      commit((db) => {
-        for (const [key, account] of Object.entries(db.accounts)) {
-          if (account.id === userId) delete db.accounts[key];
+    async deleteAccount(reauth) {
+      const db = read();
+      const account = accountById(db, requireUserId());
+      if (!account) throw new Error('Usuário não autenticado.');
+      if (account.provider === 'password') {
+        if (!reauth.password) throw new Error('Digite sua senha para confirmar.');
+        if ((await hashPassword(reauth.password)) !== account.passwordHash) throw new Error('Senha incorreta.');
+      }
+      commit((next) => {
+        for (const [key, a] of Object.entries(next.accounts)) {
+          if (a.id === account.id) delete next.accounts[key];
         }
-        delete db.data[userId];
-        db.sessionUserId = null;
+        delete next.data[account.id];
+        next.sessionUserId = null;
       });
       notify();
     },
@@ -157,6 +196,14 @@ export function createMockServices(options: MockOptions = {}): AppServices {
 
   return {
     auth,
+    profile: {
+      get: async () => ({ onboardingCompleted: userData().onboardingCompleted }),
+      async completeOnboarding() {
+        updateUserData((data) => {
+          data.onboardingCompleted = true;
+        });
+      },
+    },
     commitments: {
       list: async () => userData().commitments,
       async create(input) {

@@ -7,10 +7,10 @@ Todos commitam direto na branch `main`, cada um na sua pasta, para evitar confli
 | Pasta | Responsável |
 |---|---|
 | `src/`, `docs/arquitetura/`, arquivos de configuração da raiz | Arquiteto / Dev fullstack |
-| `docs/requisitos/`, `docs/relatorio/` | Dudu |
-| `docs/design/` | Cesinha |
-| `tests/`, `docs/testes/` | Bruno |
-| `.github/` | Calvo |
+| `docs/requisitos/`, `docs/relatorio/` | Eduardo Vinicius |
+| `docs/design/` | Gabriel Cesar |
+| `tests/`, `docs/testes/` | José Bruno |
+| `.github/` | João Victor |
 | `docs/ia/registro-uso-ia.md` | Todos |
 
 Precisa mudar algo na pasta de outra pessoa? Abra uma **Issue** ou combine com ela.

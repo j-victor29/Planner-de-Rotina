@@ -7,14 +7,14 @@ import {
   setBlockPinned,
   type AppServices,
 } from '@/services';
-import { NOW } from '../../helpers/fixtures';
+import { NOW, SETTINGS } from '../../helpers/fixtures';
 
 let services: AppServices;
 
 beforeEach(async () => {
   services = createMockServices({ store: memoryStore(), clock: () => new Date(2026, 10, 20, 8) });
   await services.auth.signUp({ name: 'Ana', email: 'ana@teste.com', password: 'Senha123' });
-  await services.settings.save({ dailyLimitMinutes: 180, windowStart: 480, windowEnd: 1320 });
+  await services.settings.save({ ...SETTINGS });
 });
 
 describe('recalculatePlan (RF09)', () => {

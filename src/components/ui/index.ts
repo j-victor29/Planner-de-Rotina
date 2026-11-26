@@ -1,5 +1,6 @@
 export * from './Alert';
 export * from './Button';
+export * from './DurationField';
 export * from './ConfirmDialog';
 export * from './EmptyState';
 export * from './Icon';
@@ -10,4 +11,5 @@ export * from './SegmentedControl';
 export * from './SelectField';
 export * from './Spinner';
 export * from './TextField';
+export * from './TimeField';
 export * from './WeekdayPicker';

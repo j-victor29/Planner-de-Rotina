@@ -1,13 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
-import { SelectField } from '@/components/ui/SelectField';
 import { TextField } from '@/components/ui/TextField';
+import { TimeField } from '@/components/ui/TimeField';
 import { WeekdayPicker } from '@/components/ui/WeekdayPicker';
-import { hasErrors, validateCommitment, type FixedCommitmentInput, type ValidationErrors } from '@/domain';
+import {
+  hasErrors,
+  parseClock,
+  validateCommitment,
+  type FixedCommitmentInput,
+  type ValidationErrors,
+  type Weekday,
+} from '@/domain';
 import page from '@/features/shared/page.module.css';
-import { timeOptions } from '@/utils/format';
-
-const EMPTY: FixedCommitmentInput = { title: '', weekdays: [1, 2, 3, 4, 5], start: 8 * 60, end: 12 * 60 };
+import { clockText } from '@/utils/format';
 
 interface CommitmentFormProps {
   initialValue?: FixedCommitmentInput;
@@ -17,16 +22,28 @@ interface CommitmentFormProps {
   onCancel?: () => void;
 }
 
-/** RF02 — formulário de compromisso fixo. */
+/** RF02 — formulário de compromisso fixo, com horários digitados. */
 export function CommitmentForm({ initialValue, submitLabel = 'Salvar', onSubmit, onCancel }: CommitmentFormProps) {
-  const [form, setForm] = useState<FixedCommitmentInput>(initialValue ?? EMPTY);
+  const [title, setTitle] = useState(initialValue?.title ?? '');
+  const [weekdays, setWeekdays] = useState<Weekday[]>(initialValue?.weekdays ?? [1, 2, 3, 4, 5]);
+  const [start, setStart] = useState(initialValue ? clockText(initialValue.start) : '');
+  const [end, setEnd] = useState(initialValue ? clockText(initialValue.end) : '');
   const [errors, setErrors] = useState<ValidationErrors<FixedCommitmentInput>>({});
   const [busy, setBusy] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    const input = { ...form, title: form.title.trim() };
+    const parsedStart = parseClock(start);
+    const parsedEnd = parseClock(end);
+    const input: FixedCommitmentInput = {
+      title: title.trim(),
+      weekdays,
+      start: parsedStart.ok ? parsedStart.minutes : 0,
+      end: parsedEnd.ok ? parsedEnd.minutes : 0,
+    };
     const found = validateCommitment(input);
+    if (!parsedStart.ok) found.start = parsedStart.error;
+    if (!parsedEnd.ok) found.end = parsedEnd.error;
     setErrors(found);
     if (hasErrors(found)) return;
     setBusy(true);
@@ -42,33 +59,16 @@ export function CommitmentForm({ initialValue, submitLabel = 'Salvar', onSubmit,
       <TextField
         label="Nome"
         placeholder="Ex.: Aula, Trabalho, Estágio"
-        value={form.title}
-        onChange={(e) => setForm({ ...form, title: e.target.value })}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
         error={errors.title}
       />
-      <WeekdayPicker
-        label="Dias da semana"
-        value={form.weekdays}
-        onChange={(weekdays) => setForm({ ...form, weekdays })}
-        error={errors.weekdays}
-      />
+      <WeekdayPicker label="Dias da semana" value={weekdays} onChange={setWeekdays} error={errors.weekdays} />
       <div className={page.formRow}>
-        <SelectField
-          label="Início"
-          options={timeOptions(0, 23 * 60 + 30)}
-          value={String(form.start)}
-          onChange={(e) => setForm({ ...form, start: Number(e.target.value) })}
-          error={errors.start}
-        />
-        <SelectField
-          label="Fim"
-          options={timeOptions(30, 24 * 60)}
-          value={String(form.end)}
-          onChange={(e) => setForm({ ...form, end: Number(e.target.value) })}
-          error={errors.end}
-        />
+        <TimeField label="Começa às" value={start} onChange={setStart} error={errors.start} />
+        <TimeField label="Termina às" value={end} onChange={setEnd} error={errors.end} />
       </div>
-      <p className={page.cardText}>Não precisa cadastrar o sono: ele fica fora da sua janela de horário (Perfil).</p>
+      <p className={page.cardText}>Digite os horários de meia em meia hora, por exemplo 19:00 ou 19:30.</p>
       <div className={page.formActions}>
         {onCancel && (
           <Button variant="secondary" onClick={onCancel}>

@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --mode mock",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-planner",
+    "test:integration": "firebase emulators:exec --only auth,firestore --project demo-planner \"vitest run --config vitest.integration.config.ts\"",
+    "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "firebase": "^13.4.0",
@@ -32,6 +36,7 @@
     "eslint": "^10.15.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.8",
+    "firebase-tools": "^15.37.0",
     "globals": "^17.14.0",
     "jsdom": "^31.0.1",
     "typescript": "^6.0.3",

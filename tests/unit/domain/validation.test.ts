@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   hasErrors,
+  sleepWarning,
   validateCommitment,
   validateSettings,
   validateTask,
@@ -86,9 +87,21 @@ describe('validateCommitment (RN10)', () => {
   });
 });
 
-const validSettings: UserSettings = { dailyLimitMinutes: 180, windowStart: 420, windowEnd: 1380 };
+const validSettings: UserSettings = {
+  dailyLimitMinutes: 180,
+  weekendLimitMinutes: null,
+  sleepStart: 23 * 60,
+  sleepEnd: 7 * 60,
+  preferredPeriod: 'qualquer',
+  restDays: [0],
+  breakMinutes: 0,
+};
 
 describe('validateSettings (RN09, RF12)', () => {
+  it('aceita configurações válidas', () => {
+    expect(hasErrors(validateSettings(validSettings))).toBe(false);
+  });
+
   it.each([
     [30, true],
     [60, false],
@@ -99,19 +112,39 @@ describe('validateSettings (RN09, RF12)', () => {
     expect(errors.dailyLimitMinutes !== undefined).toBe(invalid);
   });
 
-  it('janela: fim antes do início, menor que 1 h, e válida', () => {
-    expect(validateSettings({ ...validSettings, windowEnd: 390 }).windowEnd).toBe(
-      'O fim deve ser depois do início.',
-    );
-    expect(validateSettings({ ...validSettings, windowEnd: 450 }).windowEnd).toBe(
-      'A janela precisa ter pelo menos 1 hora.',
-    );
-    expect(validateSettings({ ...validSettings, windowEnd: 480 }).windowEnd).toBeUndefined();
+  it('limite do fim de semana segue a mesma faixa', () => {
+    expect(validateSettings({ ...validSettings, weekendLimitMinutes: 30 }).weekendLimitMinutes).toBeDefined();
+    expect(validateSettings({ ...validSettings, weekendLimitMinutes: 300 }).weekendLimitMinutes).toBeUndefined();
   });
 
-  it('rejeita horários fora da grade', () => {
-    const errors = validateSettings({ ...validSettings, windowStart: 10, windowEnd: 9999 });
-    expect(errors.windowStart).toBeDefined();
-    expect(errors.windowEnd).toBeDefined();
+  it('dormir e acordar no mesmo horário é rejeitado', () => {
+    expect(validateSettings({ ...validSettings, sleepEnd: 23 * 60 }).sleepEnd).toBe(
+      'Os horários de dormir e acordar não podem ser iguais.',
+    );
+  });
+
+  it('precisa ficar acordado pelo menos 1 hora', () => {
+    expect(validateSettings({ ...validSettings, sleepStart: 8 * 60, sleepEnd: 7 * 60 + 30 }).sleepEnd).toBe(
+      'Você precisa ficar acordado pelo menos 1 hora por dia.',
+    );
+  });
+
+  it('rejeita horários fora da grade, 7 dias de descanso, período e pausa inválidos', () => {
+    const errors = validateSettings({
+      ...validSettings,
+      sleepStart: 10,
+      sleepEnd: 9999,
+      restDays: [0, 1, 2, 3, 4, 5, 6],
+      preferredPeriod: 'madrugada' as never,
+      breakMinutes: 15,
+    });
+    expect(Object.keys(errors).sort()).toEqual(['breakMinutes', 'preferredPeriod', 'restDays', 'sleepEnd', 'sleepStart']);
+  });
+});
+
+describe('sleepWarning', () => {
+  it('avisa com menos de 8 h de sono e não avisa com 8 h (BVA)', () => {
+    expect(sleepWarning({ sleepStart: 23 * 60 + 30, sleepEnd: 7 * 60 })).toMatch(/7h30 de sono/);
+    expect(sleepWarning({ sleepStart: 23 * 60, sleepEnd: 7 * 60 })).toBeNull();
   });
 });

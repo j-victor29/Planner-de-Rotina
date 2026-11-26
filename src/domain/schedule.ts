@@ -1,6 +1,14 @@
 import { overlaps, snapToSlots, subtractIntervals, type Interval } from './intervals';
 import { RULES } from './rules';
-import { dateOf, formatDuration, formatMinute, isOnSlot, minuteOf, weekdayOf } from './time';
+import {
+  dateOf,
+  formatDuration,
+  formatMinute,
+  isOnSlot,
+  MINUTES_PER_DAY,
+  minuteOf,
+  weekdayOf,
+} from './time';
 import type {
   FixedCommitment,
   Id,
@@ -15,6 +23,44 @@ export function blockMinutes(block: Pick<PlanBlock, 'start' | 'end'>): number {
   return block.end - block.start;
 }
 
+const normalize = (minute: number) => ((minute % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+
+/** Minutos de sono por noite (ex.: 23:00 → 07:00 = 480). */
+export function sleepMinutes(settings: Pick<UserSettings, 'sleepStart' | 'sleepEnd'>): number {
+  return normalize(settings.sleepEnd - settings.sleepStart);
+}
+
+/** Trechos do dia em que o usuário está dormindo (o sono pode atravessar a meia-noite). */
+export function sleepIntervals(settings: Pick<UserSettings, 'sleepStart' | 'sleepEnd'>): Interval[] {
+  const start = normalize(settings.sleepStart);
+  const end = normalize(settings.sleepEnd);
+  if (start === end) return [];
+  if (start < end) return [{ start, end }];
+  return [
+    { start: 0, end },
+    { start, end: MINUTES_PER_DAY },
+  ].filter((i) => i.end > i.start);
+}
+
+/** Trechos do dia em que o usuário está acordado (RF12). */
+export function awakeIntervals(settings: Pick<UserSettings, 'sleepStart' | 'sleepEnd'>): Interval[] {
+  return subtractIntervals([{ start: 0, end: MINUTES_PER_DAY }], sleepIntervals(settings));
+}
+
+/** Dia de descanso: nenhum bloco de tarefa é colocado nele. */
+export function isRestDay(date: IsoDate, settings: Pick<UserSettings, 'restDays'>): boolean {
+  return settings.restDays.includes(weekdayOf(date));
+}
+
+/** RN04 — limite do dia (o fim de semana pode ter limite próprio). */
+export function dailyLimitFor(date: IsoDate, settings: UserSettings): number {
+  const weekday = weekdayOf(date);
+  const weekend = weekday === 0 || weekday === 6;
+  return weekend && settings.weekendLimitMinutes !== null
+    ? settings.weekendLimitMinutes
+    : settings.dailyLimitMinutes;
+}
+
 /** Compromissos fixos que acontecem em `date`. */
 export function commitmentsOn(date: IsoDate, commitments: FixedCommitment[]): FixedCommitment[] {
   const weekday = weekdayOf(date);
@@ -27,18 +73,20 @@ export function busyIntervals(
   commitments: FixedCommitment[],
   blocks: PlanBlock[],
   ignoreBlockId?: Id,
+  blockPadding = 0,
 ): Interval[] {
   return [
     ...commitmentsOn(date, commitments).map((c) => ({ start: c.start, end: c.end })),
     ...blocks
       .filter((b) => b.date === date && b.id !== ignoreBlockId)
-      .map((b) => ({ start: b.start, end: b.end })),
+      .map((b) => ({ start: b.start - blockPadding, end: b.end + blockPadding })),
   ];
 }
 
 /**
- * Trechos livres em `date`: janela do usuário (RF12) menos compromissos e blocos,
- * começando em `fromMinute` (para não planejar no passado, P11), na grade de 30 min.
+ * Trechos livres em `date`: tempo acordado menos compromissos e blocos,
+ * a partir de `fromMinute` (P11), na grade de 30 min. Dia de descanso não tem
+ * tempo livre. `blockPadding` reserva a pausa entre blocos.
  */
 export function freeIntervals(
   date: IsoDate,
@@ -46,9 +94,11 @@ export function freeIntervals(
   commitments: FixedCommitment[],
   blocks: PlanBlock[],
   fromMinute = 0,
+  blockPadding = 0,
 ): Interval[] {
-  const base = { start: Math.max(settings.windowStart, fromMinute), end: settings.windowEnd };
-  return subtractIntervals([base], busyIntervals(date, commitments, blocks))
+  if (isRestDay(date, settings)) return [];
+  const base = subtractIntervals(awakeIntervals(settings), [{ start: 0, end: fromMinute }]);
+  return subtractIntervals(base, busyIntervals(date, commitments, blocks, undefined, blockPadding))
     .map(snapToSlots)
     .filter((i): i is Interval => i !== null);
 }
@@ -77,24 +127,28 @@ export interface PlacementCheck {
  */
 export function checkBlockPlacement(check: PlacementCheck): string | null {
   const { date, start, end, settings } = check;
-  if (!isOnSlot(start) || !isOnSlot(end) || end <= start) {
+  if (!isOnSlot(start) || !isOnSlot(end) || end <= start || end > MINUTES_PER_DAY) {
     return 'Escolha um horário válido, em intervalos de 30 minutos.';
   }
   const today = dateOf(check.now);
   if (date < today || (date === today && start < minuteOf(check.now))) {
     return 'Não é possível mover para um horário que já passou.';
   }
-  if (start < settings.windowStart || end > settings.windowEnd) {
-    return `Fora da sua janela de horário (${formatMinute(settings.windowStart)} às ${formatMinute(settings.windowEnd)}).`;
+  if (isRestDay(date, settings)) {
+    return 'Esse é o seu dia de descanso. Escolha outro dia.';
+  }
+  const awake = awakeIntervals(settings).some((i) => start >= i.start && end <= i.end);
+  if (!awake) {
+    return `Esse horário é durante o seu sono (${formatMinute(normalize(settings.sleepStart))} às ${formatMinute(normalize(settings.sleepEnd))}).`;
   }
   const target = { start, end };
   const conflict = busyIntervals(date, check.commitments, check.blocks, check.blockId).some((i) =>
     overlaps(i, target),
   );
   if (conflict) return 'Esse horário conflita com um compromisso ou outro bloco.';
-  const used = usedMinutes(date, check.blocks, check.blockId);
-  if (used + (end - start) > settings.dailyLimitMinutes) {
-    return `Esse dia passaria do limite diário de ${formatDuration(settings.dailyLimitMinutes)}.`;
+  const limit = dailyLimitFor(date, settings);
+  if (usedMinutes(date, check.blocks, check.blockId) + (end - start) > limit) {
+    return `Esse dia passaria do limite diário de ${formatDuration(limit)}.`;
   }
   return null;
 }

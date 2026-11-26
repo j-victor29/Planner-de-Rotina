@@ -8,7 +8,16 @@ describe('createServices', () => {
     expect(typeof services.tasks.list).toBe('function');
   });
 
-  it('o modo firebase ainda não está disponível (etapa 3)', () => {
-    expect(() => createServices('firebase')).toThrow(/etapa 3/);
+  it('modo firebase sem configuração avisa o que falta', () => {
+    expect(() => createServices('firebase', { config: {} })).toThrow(/VITE_FIREBASE_/);
+  });
+
+  it('modo firebase configurado cria os serviços', () => {
+    const services = createServices('firebase', {
+      config: { apiKey: 'demo-key', projectId: 'demo-planner', appId: 'demo-app', authDomain: 'demo-planner.firebaseapp.com' },
+      appName: 'teste-create-services',
+    });
+    expect(services.auth.getCurrentUser()).toBeNull();
+    expect(typeof services.profile.get).toBe('function');
   });
 });

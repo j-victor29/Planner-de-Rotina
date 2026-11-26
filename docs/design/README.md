@@ -1,4 +1,4 @@
-# Design — responsável: **Cesinha**
+# Design — responsável: **Gabriel Cesar**
 
 - **Figma:** _(colar o link aqui)_
 - `guia-de-estilo.md` — cores, fontes, espaçamentos, componentes

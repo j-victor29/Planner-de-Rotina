@@ -5,10 +5,10 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { PriorityBadge } from '@/components/ui/PriorityBadge';
-import { SelectField } from '@/components/ui/SelectField';
 import { TextField } from '@/components/ui/TextField';
-import { formatDuration, type IsoDate, type PlanBlock, type Task } from '@/domain';
-import { formatDayMonth, formatShortDate, formatTimeRange, timeOptions } from '@/utils/format';
+import { TimeField } from '@/components/ui/TimeField';
+import { formatDuration, parseClock, type IsoDate, type PlanBlock, type Task } from '@/domain';
+import { clockText, formatDayMonth, formatShortDate, formatTimeRange } from '@/utils/format';
 
 interface BlockDetailsModalProps {
   block: PlanBlock | null;
@@ -31,7 +31,7 @@ function BlockDetails({ block, task, today, onClose }: { block: PlanBlock; task:
   const planner = usePlanner();
   const duration = block.end - block.start;
   const [date, setDate] = useState(block.date);
-  const [start, setStart] = useState(String(block.start));
+  const [start, setStart] = useState(clockText(block.start));
   const [moveError, setMoveError] = useState<string | null>(null);
   const [busy, setBusy] = useState<'pin' | 'done' | 'move' | null>(null);
 
@@ -44,14 +44,17 @@ function BlockDetails({ block, task, today, onClose }: { block: PlanBlock; task:
 
   async function move(event: FormEvent) {
     event.preventDefault();
+    const parsed = parseClock(start);
+    if (!parsed.ok) {
+      setMoveError(parsed.error);
+      return;
+    }
     setBusy('move');
-    const error = await planner.moveBlock(block.id, date, Number(start));
+    const error = await planner.moveBlock(block.id, date, parsed.minutes);
     setBusy(null);
     if (error) setMoveError(error);
     else onClose();
   }
-
-  const startOptions = timeOptions(planner.settings.windowStart, planner.settings.windowEnd - duration);
 
   return (
     <div className={styles.details}>
@@ -100,7 +103,7 @@ function BlockDetails({ block, task, today, onClose }: { block: PlanBlock; task:
         {moveError && <Alert tone="error">{moveError}</Alert>}
         <div className={styles.moveRow}>
           <TextField label="Dia" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} />
-          <SelectField label="Início" options={startOptions} value={start} onChange={(e) => setStart(e.target.value)} />
+          <TimeField label="Começa às" value={start} onChange={setStart} />
         </div>
         <Button type="submit" variant="secondary" icon="move" loading={busy === 'move'}>
           Mover para este horário

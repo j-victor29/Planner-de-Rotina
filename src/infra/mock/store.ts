@@ -1,6 +1,7 @@
 import type { FixedCommitment, PlanBlock, Task, UserSettings } from '@/domain';
 
 export interface MockUserData {
+  onboardingCompleted: boolean;
   commitments: FixedCommitment[];
   tasks: Task[];
   blocks: PlanBlock[];
@@ -13,6 +14,7 @@ export interface MockAccount {
   email: string;
   /** Só no mock: hash da senha para simular o login. O Firebase não expõe isso. */
   passwordHash: string;
+  provider: 'password' | 'google';
 }
 
 export interface MockDatabase {

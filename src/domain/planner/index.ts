@@ -1,1 +1,1 @@
-export { compareTasks, generatePlan } from './generatePlan';
+export { compareTasks, generatePlan, orderByPreference } from './generatePlan';

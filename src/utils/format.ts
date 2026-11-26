@@ -5,6 +5,7 @@ import {
   weekdayOf,
   type IsoDate,
   type MinuteOfDay,
+  type PreferredPeriod,
   type Priority,
 } from '@/domain';
 
@@ -28,6 +29,18 @@ export const PRIORITY_LABEL: Record<Priority, string> = {
   media: 'Média',
   baixa: 'Baixa',
 };
+
+export const PERIOD_LABEL: Record<PreferredPeriod, string> = {
+  manha: 'Manhã',
+  tarde: 'Tarde',
+  noite: 'Noite',
+  qualquer: 'Tanto faz',
+};
+
+/** Horário para preencher um campo de texto (1440 vira "00:00"). */
+export function clockText(minute: MinuteOfDay): string {
+  return formatMinute(minute % (24 * 60));
+}
 
 const parts = (date: IsoDate) => ({
   year: Number(date.slice(0, 4)),

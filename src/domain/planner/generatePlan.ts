@@ -1,7 +1,18 @@
-import { RULES } from '../rules';
-import { blockMinutes, freeIntervals, usedMinutes } from '../schedule';
+import type { Interval } from '../intervals';
+import { PERIOD_RANGES, RULES } from '../rules';
+import { blockMinutes, dailyLimitFor, freeIntervals, usedMinutes } from '../schedule';
 import { dateOf, dateRange, minuteOf, roundDownToSlot, roundUpToSlot } from '../time';
-import type { Id, IsoDate, PlanAlert, PlanBlock, PlanInput, PlanResult, Priority, Task } from '../types';
+import type {
+  Id,
+  IsoDate,
+  PlanAlert,
+  PlanBlock,
+  PlanInput,
+  PlanResult,
+  PreferredPeriod,
+  Priority,
+  Task,
+} from '../types';
 
 const PRIORITY_ORDER: Record<Priority, number> = { alta: 0, media: 1, baixa: 2 };
 
@@ -26,6 +37,19 @@ export function compareTasks(a: Task, b: Task, remaining: ReadonlyMap<Id, number
 }
 
 /**
+ * Ordem de tentativa dos trechos livres: primeiro a parte que cai no período
+ * preferido, depois os trechos completos em ordem de horário.
+ */
+export function orderByPreference(intervals: Interval[], period: PreferredPeriod): Interval[] {
+  if (period === 'qualquer') return intervals;
+  const range = PERIOD_RANGES[period];
+  const inside = intervals
+    .map((i) => ({ start: Math.max(i.start, range.start), end: Math.min(i.end, range.end) }))
+    .filter((i) => i.end > i.start);
+  return [...inside, ...intervals];
+}
+
+/**
  * RF04, RF09, RF10 — algoritmo de planejamento.
  *
  * Função pura e determinística (RNF06): não lê relógio nem usa aleatoriedade;
@@ -34,8 +58,9 @@ export function compareTasks(a: Task, b: Task, remaining: ReadonlyMap<Id, number
  * 1. Mantém blocos fixados e concluídos (RN05) e descarta o resto.
  * 2. Ordena as tarefas pela RN06.
  * 3. Para cada tarefa, espalha blocos de 1 h a 2 h pelos dias livres até o prazo
- *    (blocos de 30 min só para o restante, RN07), sem passar do limite diário (RN04)
- *    e sem sobrepor compromissos ou outros blocos (RN03).
+ *    (blocos de 30 min só para o restante, RN07), sem passar do limite diário (RN04),
+ *    sem sobrepor compromissos, sono ou outros blocos (RN03), pulando os dias de
+ *    descanso, respeitando a pausa entre blocos e preferindo o período escolhido.
  * 4. O que não couber vira alerta (RF10).
  */
 export function generatePlan(input: PlanInput): PlanResult {
@@ -70,8 +95,8 @@ export function generatePlan(input: PlanInput): PlanResult {
 
   const fromMinute = (date: IsoDate) => (date === today ? firstSlotToday : 0);
   const free = (date: IsoDate) =>
-    freeIntervals(date, settings, commitments, blocks, fromMinute(date));
-  const limitLeft = (date: IsoDate) => settings.dailyLimitMinutes - usedMinutes(date, blocks);
+    freeIntervals(date, settings, commitments, blocks, fromMinute(date), settings.breakMinutes);
+  const limitLeft = (date: IsoDate) => dailyLimitFor(date, settings) - usedMinutes(date, blocks);
   const hasRoom = (date: IsoDate) => limitLeft(date) >= RULES.SLOT_MINUTES && free(date).length > 0;
 
   for (const task of ordered) {
@@ -83,7 +108,7 @@ export function generatePlan(input: PlanInput): PlanResult {
     /** Tenta colocar um bloco de até `want` minutos em `date`. Retorna os minutos alocados. */
     const place = (date: IsoDate, want: number): number => {
       const size = Math.min(want, rest, limitLeft(date), RULES.BLOCK_MAX_MINUTES);
-      for (const interval of free(date)) {
+      for (const interval of orderByPreference(free(date), settings.preferredPeriod)) {
         const length = roundDownToSlot(Math.min(size, interval.end - interval.start));
         if (length < RULES.BLOCK_MIN_MINUTES) continue;
         // RN07: bloco menor que 1 h só quando for o restante da tarefa.

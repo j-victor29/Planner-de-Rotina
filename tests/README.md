@@ -1,4 +1,4 @@
-# tests — responsável: **Bruno**
+# tests — responsável: **José Bruno**
 
 | Pasta | Conteúdo | Comando |
 |---|---|---|

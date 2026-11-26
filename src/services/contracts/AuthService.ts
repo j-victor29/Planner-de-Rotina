@@ -6,13 +6,21 @@ export interface SignUpData {
   password: string;
 }
 
+/** Confirmação de identidade exigida antes de ações sensíveis (ex.: excluir conta). */
+export interface Reauthentication {
+  /** Senha atual (contas com e-mail e senha). Contas Google confirmam pelo Google. */
+  password?: string;
+}
+
 /** RF01, RF13 — autenticação. Implementações: infra/mock e infra/firebase. */
 export interface AuthService {
   getCurrentUser(): UserProfile | null;
-  /** Retorna a função para cancelar a inscrição. */
+  /** Avisa sempre que o usuário muda. Retorna a função para cancelar. */
   onAuthChange(listener: (user: UserProfile | null) => void): () => void;
   signUp(data: SignUpData): Promise<UserProfile>;
   signIn(email: string, password: string): Promise<UserProfile>;
+  signInWithGoogle(): Promise<UserProfile>;
+  sendPasswordReset(email: string): Promise<void>;
   signOut(): Promise<void>;
-  deleteAccount(): Promise<void>;
+  deleteAccount(reauth: Reauthentication): Promise<void>;
 }

@@ -1,4 +1,4 @@
-# Requisitos — responsável: **Dudu**
+# Requisitos — responsável: **Eduardo Vinicius**
 
 Arquivos (um por assunto):
 

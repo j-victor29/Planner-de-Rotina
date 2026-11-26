@@ -72,11 +72,11 @@ describe('generatePlan', () => {
     }
   });
 
-  it('respeita a janela de horário e não planeja no passado (RF12, P11)', () => {
+  it('só planeja quando o usuário está acordado e nunca no passado (RF12, P11)', () => {
     const input = planInput({ now: '2026-11-20T15:10', tasks: [task({ id: 't', durationMinutes: 600 })] });
     for (const b of generatePlan(input).blocks) {
-      expect(b.start).toBeGreaterThanOrEqual(SETTINGS.windowStart);
-      expect(b.end).toBeLessThanOrEqual(SETTINGS.windowEnd);
+      expect(b.start).toBeGreaterThanOrEqual(SETTINGS.sleepEnd);
+      expect(b.end).toBeLessThanOrEqual(SETTINGS.sleepStart);
       if (b.date === '2026-11-20') expect(b.start).toBeGreaterThanOrEqual(15 * 60 + 30);
       expect(b.date >= '2026-11-20').toBe(true);
     }
@@ -179,11 +179,61 @@ describe('generatePlan', () => {
     );
     const input = planInput({
       commitments: gaps,
-      settings: { ...SETTINGS, windowEnd: 480 + 7 * 120 },
       tasks: [task({ id: 't', durationMinutes: 90, deadline: '2026-11-20' })],
     });
     const { blocks, alerts } = generatePlan(input);
     expect(blocks).toEqual([]);
     expect(alerts).toEqual([{ taskId: 't', missingMinutes: 90 }]);
+  });
+
+  it('não coloca blocos no dia de descanso', () => {
+    const input = planInput({
+      settings: { ...SETTINGS, restDays: [0, 6] },
+      tasks: [task({ id: 'tcc', durationMinutes: 900, deadline: '2026-12-06' })],
+    });
+    const { blocks } = generatePlan(input);
+    expect(blocks.length).toBeGreaterThan(0);
+    for (const b of blocks) expect([0, 6]).not.toContain(weekdayOf(b.date));
+  });
+
+  it('usa o limite do fim de semana quando definido', () => {
+    const input = planInput({
+      settings: { ...SETTINGS, dailyLimitMinutes: 120, weekendLimitMinutes: 360 },
+      tasks: [task({ id: 'tcc', durationMinutes: 600, deadline: '2026-11-22' })],
+    });
+    const perDay = minutesByDay(generatePlan(input).blocks);
+    expect(perDay.get('2026-11-20')).toBe(120); // sexta
+    expect(perDay.get('2026-11-21')).toBe(240); // sábado: limite 6 h, mas cabe o restante
+    expect((perDay.get('2026-11-21') ?? 0) + (perDay.get('2026-11-22') ?? 0)).toBe(480);
+  });
+
+  it('prefere o período escolhido quando há espaço', () => {
+    const input = planInput({
+      settings: { ...SETTINGS, preferredPeriod: 'noite' },
+      tasks: [task({ id: 't', durationMinutes: 120, deadline: '2026-11-25' })],
+    });
+    for (const b of generatePlan(input).blocks) expect(b.start).toBeGreaterThanOrEqual(18 * 60);
+  });
+
+  it('deixa a pausa escolhida entre blocos', () => {
+    const input = planInput({
+      settings: { ...SETTINGS, breakMinutes: 30, dailyLimitMinutes: 360 },
+      tasks: [
+        task({ id: 'a', durationMinutes: 120, deadline: '2026-11-20' }),
+        task({ id: 'b', durationMinutes: 120, deadline: '2026-11-20' }),
+      ],
+    });
+    const [first, second] = generatePlan(input).blocks;
+    expect(second!.start - first!.end).toBeGreaterThanOrEqual(30);
+  });
+
+  it('o sono pode atravessar a meia-noite', () => {
+    const input = planInput({
+      now: '2026-11-20T00:00',
+      settings: { ...SETTINGS, sleepStart: 60, sleepEnd: 9 * 60, dailyLimitMinutes: 600 },
+      tasks: [task({ id: 't', durationMinutes: 60, deadline: '2026-11-20' })],
+    });
+    // Acordado de 00:00 a 01:00 (antes de dormir) e de 09:00 a 24:00.
+    expect(generatePlan(input).blocks[0]).toMatchObject({ start: 0, end: 60 });
   });
 });

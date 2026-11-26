@@ -6,7 +6,9 @@ import {
   commitmentsOn,
   formatDuration,
   formatMinute,
+  dailyLimitFor,
   freeIntervals,
+  isRestDay,
   usedMinutes,
   weekdayOf,
   type FixedCommitment,
@@ -70,25 +72,28 @@ export function Timeline({
           <div className={styles.gutterHead} />
           {days.map((day) => {
             const used = usedMinutes(day, blocks);
-            const pct = Math.min(100, (used / settings.dailyLimitMinutes) * 100);
+            const limit = dailyLimitFor(day, settings);
+            const pct = Math.min(100, (used / limit) * 100);
             const wd = weekdayOf(day);
+            const rest = isRestDay(day, settings);
             return (
               <div key={day} className={cx(styles.dayHead, day === today && styles.dayHeadToday)}>
                 <span className={styles.dayName}>
                   <span className={styles.dayWeekday}>{WEEKDAY_SHORT[wd]}</span>
                   <span className={styles.dayNumber}>{dayOfMonth(day)}</span>
                 </span>
-                <span
-                  className={styles.capacity}
-                  title={`${formatDuration(used)} de ${formatDuration(settings.dailyLimitMinutes)} planejadas`}
-                >
-                  <span className={styles.capacityTrack}>
-                    <span className={styles.capacityFill} style={{ width: `${pct}%` }} />
+                {rest ? (
+                  <span className={styles.restChip}>Descanso</span>
+                ) : (
+                  <span className={styles.capacity} title={`${formatDuration(used)} de ${formatDuration(limit)} planejadas`}>
+                    <span className={styles.capacityTrack}>
+                      <span className={styles.capacityFill} style={{ width: `${pct}%` }} />
+                    </span>
+                    <span className={styles.capacityText}>
+                      {formatDuration(used)}/{formatDuration(limit)}
+                    </span>
                   </span>
-                  <span className={styles.capacityText}>
-                    {formatDuration(used)}/{formatDuration(settings.dailyLimitMinutes)}
-                  </span>
-                </span>
+                )}
               </div>
             );
           })}
@@ -113,7 +118,7 @@ export function Timeline({
             return (
               <div
                 key={day}
-                className={styles.column}
+                className={cx(styles.column, isRestDay(day, settings) && styles.restColumn)}
                 style={{ backgroundSize: `100% ${HOUR_HEIGHT}px` }}
                 aria-label={WEEKDAY_LONG[weekdayOf(day)]}
               >
@@ -123,6 +128,11 @@ export function Timeline({
                     style={{ height: isPast ? '100%' : top(nowMinute) }}
                     aria-hidden="true"
                   />
+                )}
+                {isRestDay(day, settings) && (
+                  <span className={styles.restLabel} aria-hidden="true">
+                    Dia de descanso
+                  </span>
                 )}
                 {free.map((i) => (
                   <div

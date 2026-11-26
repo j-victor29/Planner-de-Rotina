@@ -1,6 +1,6 @@
 # Planner de Rotina
 
-<!-- Badges de CI e cobertura: adicionados pelo Calvo junto com o ci.yml -->
+<!-- Badges de CI e cobertura: adicionados pelo João Victor junto com o ci.yml -->
 
 Sistema que organiza a rotina e decide **quando** fazer cada tarefa. O usuário cadastra a rotina fixa (aula, trabalho, sono) e as tarefas com duração, prazo e prioridade; o sistema distribui blocos de trabalho nos horários livres das semanas até o prazo, respeitando o limite diário. Se não houver tempo suficiente, ele avisa em vez de montar um plano impossível.
 
@@ -30,12 +30,16 @@ npm run dev                  # http://localhost:5173
 
 | Comando | O que faz |
 |---|---|
-| `npm run dev` | Servidor de desenvolvimento |
+| `npm run dev` | Servidor de desenvolvimento (usa o Firebase do `.env.local`) |
+| `npm run dev:mock` | Servidor sem Firebase, com dados só no navegador |
 | `npm run build` | Checa tipos e gera a versão de produção em `dist/` |
 | `npm run lint` | Análise estática (ESLint) |
 | `npm run typecheck` | Checagem de tipos |
 | `npm run test` | Testes automatizados |
 | `npm run test:coverage` | Testes + relatório de cobertura em `coverage/` |
+| `npm run test:integration` | Testes com o Firebase Emulator (precisa de Java 21+) |
+| `npm run emulators` | Sobe os emuladores do Firebase (Auth + Firestore) |
+| `npm run deploy:rules` | Publica `firestore.rules` no projeto Firebase |
 
 ## Estrutura
 
@@ -52,11 +56,11 @@ Arquitetura: [docs/arquitetura/README.md](docs/arquitetura/README.md) · Como co
 
 | Papel | Integrante |
 |---|---|
-| Dev fullstack e arquiteto | Vitallzin |
-| Product Owner e requisitos | Dudu |
-| DevOps, CI/CD e repositório | Calvo |
-| Interface e usabilidade | Cesinha |
-| Testes | Bruno |
+| Dev fullstack e arquiteto | Cauã Vital |
+| Product Owner e requisitos | Eduardo Vinicius |
+| DevOps, CI/CD e repositório | João Victor |
+| Interface e usabilidade | Gabriel Cesar |
+| Testes | José Bruno |
 
 ## Versões
 

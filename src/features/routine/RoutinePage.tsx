@@ -10,6 +10,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatDuration, type FixedCommitment, type Weekday } from '@/domain';
+import { DemoCta } from '@/features/shared/DemoCta';
 import page from '@/features/shared/page.module.css';
 import { formatTimeRange, WEEKDAY_LETTER, WEEKDAY_LONG } from '@/utils/format';
 
@@ -20,10 +21,6 @@ export function RoutinePage() {
   const planner = usePlanner();
   const [editing, setEditing] = useState<FixedCommitment | 'new' | null>(null);
   const [deleting, setDeleting] = useState<FixedCommitment | null>(null);
-
-  const open = (value: FixedCommitment | 'new') => {
-    if (planner.ensureAccess()) setEditing(value);
-  };
   const sorted = [...planner.commitments].sort((a, b) => a.start - b.start || a.title.localeCompare(b.title));
 
   return (
@@ -32,11 +29,23 @@ export function RoutinePage() {
         title="Rotina fixa"
         description="Horários que se repetem toda semana e ficam bloqueados no plano."
         actions={
-          <Button icon="plus" onClick={() => open('new')}>
-            Novo compromisso
-          </Button>
+          !planner.readOnly && (
+            <Button icon="plus" onClick={() => setEditing('new')}>
+              Novo compromisso
+            </Button>
+          )
         }
       />
+
+      {planner.readOnly && (
+        <>
+          <DemoCta
+            title="Quer cadastrar a sua rotina?"
+            text="Crie sua conta grátis para informar suas aulas, trabalho e outros compromissos. O planner organiza as tarefas em volta deles."
+          />
+          <h2 className={page.sectionLabel}>Rotina de exemplo</h2>
+        </>
+      )}
 
       {planner.status === 'loading' ? (
         <Spinner />
@@ -46,7 +55,7 @@ export function RoutinePage() {
             icon="repeat"
             title="Nenhum compromisso fixo"
             description="Cadastre aula, trabalho ou estágio para o planner saber quando você está ocupado."
-            action={<Button onClick={() => open('new')}>Cadastrar compromisso</Button>}
+            action={<Button onClick={() => setEditing('new')}>Cadastrar compromisso</Button>}
           />
         </div>
       ) : (
@@ -68,14 +77,12 @@ export function RoutinePage() {
                   ))}
                 </span>
               </div>
-              <div className={page.itemActions}>
-                <IconButton icon="edit" label={`Editar ${c.title}`} onClick={() => open(c)} />
-                <IconButton
-                  icon="trash"
-                  label={`Excluir ${c.title}`}
-                  onClick={() => planner.ensureAccess() && setDeleting(c)}
-                />
-              </div>
+              {!planner.readOnly && (
+                <div className={page.itemActions}>
+                  <IconButton icon="edit" label={`Editar ${c.title}`} onClick={() => setEditing(c)} />
+                  <IconButton icon="trash" label={`Excluir ${c.title}`} onClick={() => setDeleting(c)} />
+                </div>
+              )}
             </li>
           ))}
         </ul>

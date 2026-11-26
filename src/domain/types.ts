@@ -55,17 +55,36 @@ export interface PlanBlock {
   done: boolean;
 }
 
+/** Período do dia em que o usuário prefere fazer as tarefas. */
+export type PreferredPeriod = 'manha' | 'tarde' | 'noite' | 'qualquer';
+
+export const PREFERRED_PERIODS: readonly PreferredPeriod[] = ['manha', 'tarde', 'noite', 'qualquer'];
+
 /** RF11, RF12 — preferências usadas pelo planejamento. */
 export interface UserSettings {
+  /** Limite de horas de tarefas por dia (RN04). */
   dailyLimitMinutes: number;
-  windowStart: MinuteOfDay;
-  windowEnd: MinuteOfDay;
+  /** Limite no sábado e no domingo; null = igual ao limite diário. */
+  weekendLimitMinutes: number | null;
+  /** Horário em que vai dormir. O sono pode atravessar a meia-noite. */
+  sleepStart: MinuteOfDay;
+  /** Horário em que acorda. O planner só usa o tempo acordado (RF12). */
+  sleepEnd: MinuteOfDay;
+  /** Período preferido para os blocos de tarefa. */
+  preferredPeriod: PreferredPeriod;
+  /** Dias de descanso/lazer: nenhum bloco de tarefa é colocado neles. */
+  restDays: Weekday[];
+  /** Pausa entre blocos de tarefa (0 ou 30 min). */
+  breakMinutes: number;
 }
+
+export type AuthProvider = 'password' | 'google';
 
 export interface UserProfile {
   id: Id;
   name: string;
   email: string;
+  provider: AuthProvider;
 }
 
 /** RF10 — aviso de que uma tarefa não coube até o prazo. */

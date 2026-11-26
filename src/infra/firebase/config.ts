@@ -1,5 +1,7 @@
+import type { FirebaseOptions } from 'firebase/app';
+
 /** Lê a configuração do Firebase das variáveis de ambiente (ver .env.example). */
-export function readFirebaseConfig() {
+export function readFirebaseConfig(): FirebaseOptions {
   const env = import.meta.env;
   return {
     apiKey: env.VITE_FIREBASE_API_KEY,
@@ -9,4 +11,8 @@ export function readFirebaseConfig() {
     messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
     appId: env.VITE_FIREBASE_APP_ID,
   };
+}
+
+export function isFirebaseConfigured(config: FirebaseOptions): boolean {
+  return Boolean(config.apiKey && config.projectId && config.appId);
 }

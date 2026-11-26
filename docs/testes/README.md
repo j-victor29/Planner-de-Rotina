@@ -1,4 +1,4 @@
-# Testes — responsável: **Bruno**
+# Testes — responsável: **José Bruno**
 
 - `plano-de-testes.md`
 - `casos-de-teste-ep-bva.md`

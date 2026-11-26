@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generatePlan, type Task } from '@/domain';
-import { commitment, planInput } from '../helpers/fixtures';
+import { commitment, planInput, SETTINGS } from '../helpers/fixtures';
 
 // RNF01 — gerar o plano com 50 tarefas em menos de 2 segundos.
 describe('desempenho do planejamento (RNF01)', () => {
@@ -18,7 +18,7 @@ describe('desempenho do planejamento (RNF01)', () => {
         commitment({ id: 'estagio', start: 480, end: 780 }),
         commitment({ id: 'aula', start: 1140, end: 1320 }),
       ],
-      settings: { dailyLimitMinutes: 480, windowStart: 420, windowEnd: 1380 },
+      settings: { ...SETTINGS, dailyLimitMinutes: 480, sleepStart: 1380, sleepEnd: 420 },
       tasks,
     });
 

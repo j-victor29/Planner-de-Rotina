@@ -1,6 +1,6 @@
 import {
   addDays,
-  DEFAULT_SETTINGS,
+  defaultSettings,
   fromJsDate,
   dateOf,
   type FixedCommitment,
@@ -11,7 +11,7 @@ import type { AppServices } from '@/services/AppServices';
 import { createMockServices } from './createMockServices';
 import { memoryStore, type MockDatabase, type MockUserData } from './store';
 
-export const DEMO_USER = { id: 'demo', name: 'Visitante', email: 'demo@planner.local' };
+export const DEMO_USER = { id: 'demo', name: 'Visitante', email: 'demo@planner.local', provider: 'password' as const };
 
 /** Semana de exemplo: estudante com estágio de manhã e aula à noite. */
 export function buildDemoData(today: IsoDate): MockUserData {
@@ -29,10 +29,11 @@ export function buildDemoData(today: IsoDate): MockUserData {
     { id: 'demo-leitura', title: 'Leitura de Sociologia', durationMinutes: 90, deadline: addDays(today, 3), priority: 'baixa', createdAt },
   ];
   return {
+    onboardingCompleted: true,
     commitments,
     tasks,
     blocks: [],
-    settings: { ...DEFAULT_SETTINGS, dailyLimitMinutes: 3 * 60 },
+    settings: { ...defaultSettings(), dailyLimitMinutes: 3 * 60, preferredPeriod: 'tarde', restDays: [0] },
   };
 }
 

@@ -34,6 +34,16 @@ export interface BlockRepository {
   update(block: PlanBlock): Promise<PlanBlock>;
 }
 
+export interface AccountProfile {
+  /** RF15 — o passo a passo inicial já foi concluído. */
+  onboardingCompleted: boolean;
+}
+
+export interface ProfileRepository {
+  get(): Promise<AccountProfile>;
+  completeOnboarding(): Promise<void>;
+}
+
 export interface SettingsRepository {
   get(): Promise<UserSettings>;
   save(settings: UserSettings): Promise<UserSettings>;

@@ -1,11 +1,16 @@
 rules_version = '2';
 
 // RNF05: cada usuário só lê e escreve os próprios dados.
-// Todos os dados ficam em /users/{uid}/... (ver docs/arquitetura/modelo-de-dados.md).
+// Estrutura: docs/arquitetura/modelo-de-dados.md
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Documento do usuário e tudo abaixo dele (rotina, tarefas, plano, preferências).
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if isOwner(uid);
     }
 
     // Qualquer outro caminho é negado.

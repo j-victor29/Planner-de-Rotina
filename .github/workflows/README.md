@@ -1,4 +1,4 @@
-# GitHub Actions — responsável: **Calvo**
+# GitHub Actions — responsável: **João Victor**
 
 O arquivo `ci.yml` deve ficar nesta pasta (exigência do professor). Passos que o projeto já suporta:
 

@@ -19,6 +19,49 @@
   margin-bottom: var(--space-4);
 }
 
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-primary-soft), var(--color-surface));
+  border: 1px solid var(--color-border);
+}
+.ctaIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.ctaText {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.ctaText p {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.sectionLabel {
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
 .list {
   list-style: none;
   margin: 0;

@@ -1,3 +1,5 @@
+import type { UserSettings } from './types';
+
 /**
  * Constantes das regras de negócio. Valores marcados com "P#" dependem de
  * decisões em aberto (docs/requisitos/09-pontos-em-aberto.md) e podem mudar.
@@ -18,14 +20,34 @@ export const RULES = {
   TASK_MAX_MINUTES: 200 * 60,
   /** Tamanho máximo do título de tarefas e compromissos. */
   TITLE_MAX_LENGTH: 80,
-  /** RF12 — a janela de planejamento precisa ter pelo menos 1 hora. */
-  WINDOW_MIN_MINUTES: 60,
+  /** O usuário precisa ficar acordado pelo menos 1 hora por dia. */
+  AWAKE_MIN_MINUTES: 60,
+  /** Abaixo disso o sistema avisa (só aviso, não bloqueia). */
+  SLEEP_RECOMMENDED_MINUTES: 8 * 60,
+  /** Pausas entre blocos permitidas. */
+  BREAK_OPTIONS: [0, 30],
   /** P10 — fuso usado no planejamento. */
   TIME_ZONE: 'America/Sao_Paulo',
 } as const;
 
-export const DEFAULT_SETTINGS = {
-  dailyLimitMinutes: 4 * 60,
-  windowStart: 7 * 60,
-  windowEnd: 23 * 60,
+/** Faixas dos períodos do dia (minutos). */
+export const PERIOD_RANGES = {
+  manha: { start: 0, end: 12 * 60 },
+  tarde: { start: 12 * 60, end: 18 * 60 },
+  noite: { start: 18 * 60, end: 24 * 60 },
 } as const;
+
+export const DEFAULT_SETTINGS: UserSettings = {
+  dailyLimitMinutes: 4 * 60,
+  weekendLimitMinutes: null,
+  sleepStart: 23 * 60,
+  sleepEnd: 7 * 60,
+  preferredPeriod: 'qualquer',
+  restDays: [],
+  breakMinutes: 0,
+};
+
+/** Cópia nova das configurações padrão (evita compartilhar o array restDays). */
+export function defaultSettings(): UserSettings {
+  return { ...DEFAULT_SETTINGS, restDays: [] };
+}

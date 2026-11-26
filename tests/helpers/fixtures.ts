@@ -4,10 +4,15 @@ import type { FixedCommitment, PlanInput, Task, UserSettings } from '@/domain';
 export const NOW = '2026-11-20T08:00';
 export const TODAY = '2026-11-20';
 
+/** Acordado das 08:00 às 22:00, limite de 3 h, sem preferências. */
 export const SETTINGS: UserSettings = {
   dailyLimitMinutes: 3 * 60,
-  windowStart: 8 * 60,
-  windowEnd: 22 * 60,
+  weekendLimitMinutes: null,
+  sleepStart: 22 * 60,
+  sleepEnd: 8 * 60,
+  preferredPeriod: 'qualquer',
+  restDays: [],
+  breakMinutes: 0,
 };
 
 export function task(overrides: Partial<Task> & Pick<Task, 'id'>): Task {
